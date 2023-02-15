@@ -78,7 +78,7 @@ insttuic(){
     fi
     ${PACKAGE_INSTALL} wget curl sudo
 
-    wget https://cdn.jsdelivr.net/gh/Misaka-blog/tuic-script/files/tuic-latest-linux-$(archAffix) -O /usr/local/bin/tuic
+    wget https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/files/tuic-latest-linux-$(archAffix) -O /usr/local/bin/tuic
     if [[ -f "/usr/local/bin/tuic" ]]; then
         chmod +x /usr/local/bin/tuic
     else
