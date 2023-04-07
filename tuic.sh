@@ -111,6 +111,20 @@ insttuic(){
             green "已输入的域名：$domain" && sleep 1
             domainIP=$(curl -sm8 ipget.net/?ip="${domain}")
             if [[ $domainIP == $ip ]]; then
+                ${PACKAGE_INSTALL[int]} curl wget sudo socat openssl
+                if [[ $SYSTEM == "CentOS" ]]; then
+                    ${PACKAGE_INSTALL[int]} cronie
+                    systemctl start crond
+                    systemctl enable crond
+                else
+                    ${PACKAGE_INSTALL[int]} cron
+                    systemctl start cron
+                    systemctl enable cron
+                fi
+                curl https://get.acme.sh | sh -s email=$(date +%s%N | md5sum | cut -c 1-16)@gmail.com
+                source ~/.bashrc
+                bash ~/.acme.sh/acme.sh --upgrade --auto-upgrade
+                bash ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
                 if [[ -n $(echo $ip | grep ":") ]]; then
                     bash ~/.acme.sh/acme.sh --issue -d ${domain} --standalone -k ec-256 --listen-v6 --insecure
                 else
