@@ -315,7 +315,7 @@ showconf(){
 menu() {
     clear
     echo "#############################################################"
-    echo -e "#                   ${RED}Tuic 一键安装脚本${PLAIN}                      #"
+    echo -e "#                    ${RED}Tuic 一键安装脚本${PLAIN}                      #"
     echo -e "# ${GREEN}作者${PLAIN}: MisakaNo の 小破站                                  #"
     echo -e "# ${GREEN}博客${PLAIN}: https://blog.misaka.rest                            #"
     echo -e "# ${GREEN}GitHub 项目${PLAIN}: https://github.com/Misaka-blog               #"
