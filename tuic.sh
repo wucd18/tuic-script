@@ -106,6 +106,18 @@ insttuic(){
             domain=$(cat /root/ca.log)
             green "检测到原有域名：$domain 的证书，正在应用"
         else
+            WARPv4Status=$(curl -s4m8 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
+            WARPv6Status=$(curl -s6m8 https://www.cloudflare.com/cdn-cgi/trace -k | grep warp | cut -d= -f2)
+            if [[ $WARPv4Status =~ on|plus ]] || [[ $WARPv6Status =~ on|plus ]]; then
+                wg-quick down wgcf >/dev/null 2>&1
+                systemctl stop warp-go >/dev/null 2>&1
+                ip=$(curl -s4m8 ip.p3terx.com -k | sed -n 1p) || ip=$(curl -s6m8 ip.p3terx.com -k | sed -n 1p)
+                wg-quick up wgcf >/dev/null 2>&1
+                systemctl start warp-go >/dev/null 2>&1
+            else
+                ip=$(curl -s4m8 ip.p3terx.com -k | sed -n 1p) || ip=$(curl -s6m8 ip.p3terx.com -k | sed -n 1p)
+            fi
+            
             read -p "请输入需要申请证书的域名：" domain
             [[ -z $domain ]] && red "未输入域名，无法执行操作！" && exit 1
             green "已输入的域名：$domain" && sleep 1
