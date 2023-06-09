@@ -257,13 +257,9 @@ EOF
         red "tuic 服务启动失败，请运行systemctl status tuic查看服务状态并反馈，脚本退出" && exit 1
     fi
     red "======================================================================================"
-    url="tuic://$domain:$port?password=$passwd&alpn=h3&mode=bbr#tuic-misaka"
-    echo ${url} > /root/tuic/URL.txt
     green "Tuic 代理服务安装完成"
     yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
-    yellow "Tuic 节点配置明文如下，并保存到 /root/tuic/tuic.txt"
-    cat /root/tuic/tuic.txt
 }
 
 unsttuic(){
@@ -360,8 +356,6 @@ changeconf(){
 showconf(){
     yellow "v2rayn客户端配置文件v2rayn.json内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
-    yellow "Tuic节点配置明文如下，并保存到 /root/tuic/tuic.txt"
-    cat /root/tuic/tuic.txt
 }
 
 menu() {
