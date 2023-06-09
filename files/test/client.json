@@ -2,11 +2,16 @@
     "relay": {
         "server": "example.com:443",
         "uuid": "00000000-0000-0000-0000-000000000000",
-        "password": "PASSWORD"
+        "password": "PASSWORD",
+        "congestion_control": "bbr",
+        "alpn": ["h3", "spdy/3.1"],
+        "disable_sni": false,
+        "zero_rtt_handshake": true
     },
     "local": {
-        "server": "[::]:1080",
+        "server": "[::]:6080",
         "dual_stack": true
     },
+    "udp_relay_mode": "quic",
     "log_level": "warn"
 }

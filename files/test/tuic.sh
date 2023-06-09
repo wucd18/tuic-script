@@ -171,42 +171,48 @@ insttuic(){
         fi
     done
 
-    read -p "设置tuic Token（回车跳过为随机字符）：" token
+    read -p "设置 tuic UUID（回车跳过为随机字符）：" uuid
+    [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
+
+    read -p "设置 tuic 密码（回车跳过为随机字符）：" token
     [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
 
     green "正在配置 Tuic..."
     mkdir /etc/tuic >/dev/null 2>&1
     cat <<EOF > /etc/tuic/tuic.json
 {
-    "port": $port,
-    "token": ["$token"],
+    "server": "[::]:$port",
+    "users": {
+        "$uuid": "$token"
+    },
     "certificate": "$certpath",
     "private_key": "$keypath",
-    "ip": "::",
-    "congestion_controller": "bbr",
-    "alpn": ["h3"]
+    "congestion_control": "bbr",
+    "alpn": ["h3", "spdy/3.1"],
+    "udp_relay_ipv6": true,
+    "zero_rtt_handshake": true,
+    "dual_stack": true,
+    "log_level": "warn"
 }
 EOF
     mkdir /root/tuic >/dev/null 2>&1
     cat <<EOF > /root/tuic/v2rayn.json
 {
     "relay": {
-        "server": "$domain",
-        "port": $port,
-        "token": "$token",
-        "ip": "$ip",
-        "congestion_controller": "bbr",
-        "udp_relay_mode": "quic",
-        "alpn": ["h3"],
+        "server": "$domain:$port",
+        "uuid": "$uuid",
+        "password": "$token",
+        "congestion_control": "bbr",
+        "alpn": ["h3", "spdy/3.1"],
         "disable_sni": false,
-        "reduce_rtt": false,
-        "max_udp_relay_packet_size": 1500
+        "zero_rtt_handshake": true
     },
     "local": {
-        "port": 6080,
-        "ip": "127.0.0.1"
+        "server": "[::]:6080",
+        "dual_stack": true
     },
-    "log_level": "off"
+    "udp_relay_mode": "quic",
+    "log_level": "warn"
 }
 EOF
 
@@ -215,6 +221,7 @@ Sagernet 与 小火箭 配置说明（以下6项必填）：
 {
     服务器地址：$domain
     服务器端口：$port
+    UUID: $uuid
     token：$token
     ALPN：h3
     UDP转发：开启
@@ -309,7 +316,7 @@ changeport(){
 
 changetoken(){
     oldtoken=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
-    read -p "设置tuic Token（回车跳过为随机字符）：" token
+    read -p "设置 tuic 密码（回车跳过为随机字符）：" token
     [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
 
     sed -i "3s/$oldtoken/$token/g" /etc/tuic/tuic.json
@@ -321,7 +328,7 @@ changetoken(){
 changeconf(){
     green "Tuic 配置变更选择如下:"
     echo -e " ${GREEN}1.${PLAIN} 修改端口"
-    echo -e " ${GREEN}2.${PLAIN} 修改Token"
+    echo -e " ${GREEN}2.${PLAIN} 修改密码"
     echo ""
     read -p " 请选择操作[1-2]：" confAnswer
     case $confAnswer in
