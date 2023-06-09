@@ -302,6 +302,7 @@ tuicswitch(){
 
 changeport(){
     oldport=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 2p | awk '{print $2}'| tr -d ',')
+    
     read -p "设置 tuic 端口[1-65535]（回车则随机分配端口）：" port
     [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
 
@@ -321,6 +322,7 @@ changeport(){
 
 changeuuid(){
     olduuid=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
+
     read -p "设置 tuic UUID（回车跳过为随机 UUID）：" uuid
     [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
 
@@ -332,6 +334,7 @@ changeuuid(){
 
 changepasswd(){
     oldpasswd=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
+
     read -p "设置 tuic 密码（回车跳过为随机字符）：" passwd
     [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
 
