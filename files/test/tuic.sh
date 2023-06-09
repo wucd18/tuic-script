@@ -171,7 +171,7 @@ insttuic(){
         fi
     done
 
-    read -p "设置 tuic UUID（回车跳过为随机字符）：" uuid
+    read -p "设置 tuic UUID（回车跳过为随机 UUID）：" uuid
     [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
 
     read -p "设置 tuic 密码（回车跳过为随机字符）：" passwd
@@ -316,6 +316,17 @@ changeport(){
     sed -i "2s/$oldport/$port/g" /etc/tuic/tuic.json
     sed -i "4s/$oldport/$port/g" /root/tuic/v2rayn.json
     sed -i "4s/$oldport/$port/g" /root/tuic/tuic.txt
+    stoptuic && starttuic
+}
+
+changeuuid(){
+    olduuid=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
+    read -p "设置 tuic UUID（回车跳过为随机 UUID）：" uuid
+    [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
+
+    sed -i "3s/$olduuid/$uuid/g" /etc/tuic/tuic.json
+    sed -i "5s/$olduuid/$uuid/g" /root/tuic/v2rayn.json
+    sed -i "5s/$olduuid/$uuid/g" /root/tuic/tuic.txt
     stoptuic && starttuic
 }
 
