@@ -1,0 +1,12 @@
+{
+    "relay": {
+        "server": "example.com:443",
+        "uuid": "00000000-0000-0000-0000-000000000000",
+        "password": "PASSWORD"
+    },
+    "local": {
+        "server": "[::]:1080",
+        "dual_stack": true
+    },
+    "log_level": "warn"
+}

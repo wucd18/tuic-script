@@ -1,0 +1,13 @@
+{
+    "server": "[::]:443",
+    "users": {
+        "00000000-0000-0000-0000-000000000000": "PASSWORD_0"
+    },
+    "certificate": "PATH/TO/CERTIFICATE",
+    "private_key": "PATH/TO/PRIVATE_KEY",
+    "congestion_control": "bbr",
+    "udp_relay_ipv6": true,
+    "zero_rtt_handshake": true,
+    "dual_stack": true,
+    "log_level": "warn"
+}
