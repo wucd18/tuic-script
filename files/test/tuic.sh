@@ -174,8 +174,8 @@ insttuic(){
     read -p "设置 tuic UUID（回车跳过为随机字符）：" uuid
     [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
 
-    read -p "设置 tuic 密码（回车跳过为随机字符）：" token
-    [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
+    read -p "设置 tuic 密码（回车跳过为随机字符）：" passwd
+    [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
 
     green "正在配置 Tuic..."
     mkdir /etc/tuic >/dev/null 2>&1
@@ -183,7 +183,7 @@ insttuic(){
 {
     "server": "[::]:$port",
     "users": {
-        "$uuid": "$token"
+        "$uuid": "$passwd"
     },
     "certificate": "$certpath",
     "private_key": "$keypath",
@@ -206,7 +206,7 @@ EOF
     "relay": {
         "server": "$domain:$port",
         "uuid": "$uuid",
-        "password": "$token",
+        "password": "$passwd",
         "congestion_control": "bbr",
         "alpn": ["h3", "spdy/3.1"],
         "disable_sni": false,
@@ -227,7 +227,7 @@ Sagernet 与 小火箭 配置说明（以下6项必填）：
     服务器地址：$domain
     服务器端口：$port
     UUID: $uuid
-    token：$token
+    密码：$passwd
     ALPN：h3
     UDP转发：开启
     congestion controller：bbr
@@ -257,7 +257,7 @@ EOF
         red "tuic 服务启动失败，请运行systemctl status tuic查看服务状态并反馈，脚本退出" && exit 1
     fi
     red "======================================================================================"
-    url="tuic://$domain:$port?password=$token&alpn=h3&mode=bbr#tuic-misaka"
+    url="tuic://$domain:$port?password=$passwd&alpn=h3&mode=bbr#tuic-misaka"
     echo ${url} > /root/tuic/URL.txt
     green "Tuic 代理服务安装完成"
     yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
@@ -319,14 +319,14 @@ changeport(){
     stoptuic && starttuic
 }
 
-changetoken(){
-    oldtoken=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
-    read -p "设置 tuic 密码（回车跳过为随机字符）：" token
-    [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
+changepasswd(){
+    oldpasswd=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
+    read -p "设置 tuic 密码（回车跳过为随机字符）：" passwd
+    [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
 
-    sed -i "3s/$oldtoken/$token/g" /etc/tuic/tuic.json
-    sed -i "5s/$oldtoken/$token/g" /root/tuic/v2rayn.json
-    sed -i "5s/$oldtoken/$token/g" /root/tuic/tuic.txt
+    sed -i "3s/$oldpasswd/$passwd/g" /etc/tuic/tuic.json
+    sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/v2rayn.json
+    sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/tuic.txt
     stoptuic && starttuic
 }
 
@@ -338,7 +338,7 @@ changeconf(){
     read -p " 请选择操作[1-2]：" confAnswer
     case $confAnswer in
         1 ) changeport ;;
-        2 ) changetoken ;;
+        2 ) changepasswd ;;
         * ) exit 1 ;;
     esac
 }
