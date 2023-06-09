@@ -93,10 +93,10 @@ insttuic(){
     echo ""
     read -rp "请输入选项 [1-2]: " certInput
     if [[ $certInput == 2 ]]; then
-        read -p "请输入公钥文件crt的路径：" certpath
-        yellow "公钥文件crt的路径：$certpath "
-        read -p "请输入密钥文件key的路径：" keypath
-        yellow "密钥文件key的路径：$keypath "
+        read -p "请输入公钥文件 crt 的路径：" certpath
+        yellow "公钥文件 crt 的路径：$certpath "
+        read -p "请输入密钥文件 key 的路径：" keypath
+        yellow "密钥文件 key 的路径：$keypath "
         read -p "请输入证书的域名：" domain
         yellow "证书域名：$domain"
     else
