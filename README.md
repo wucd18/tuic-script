@@ -1,9 +1,19 @@
-# tuic-script
+# tuic script
 
 Tuic 协议一键部署脚本
 
+## 一键脚本地址
+
+### tuic V5
+
 ```shell
 wget -N --no-check-certificate https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/tuic.sh && bash tuic.sh
+```
+
+### 旧版本
+
+```shell
+wget -N --no-check-certificate https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/tuic_old.sh && bash tuic_old.sh
 ```
 
 ## 赞助
