@@ -248,6 +248,8 @@ EOF
     green "Tuic 代理服务安装完成"
     yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
+    yellow "Tuic 节点配置明文如下，并保存到 /root/tuic/tuic.txt"
+    cat /root/tuic/tuic.txt
 }
 
 unsttuic(){
