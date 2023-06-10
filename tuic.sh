@@ -78,7 +78,7 @@ insttuic(){
     fi
     ${PACKAGE_INSTALL} wget curl sudo
 
-    wget https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/files/tuic-latest-linux-$(archAffix) -O /usr/local/bin/tuic
+    wget https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/files/test/tuic-server-1.0.0-x86_64-unknown-linux-musl -O /usr/local/bin/tuic
     if [[ -f "/usr/local/bin/tuic" ]]; then
         chmod +x /usr/local/bin/tuic
     else
@@ -93,15 +93,15 @@ insttuic(){
     echo ""
     read -rp "请输入选项 [1-2]: " certInput
     if [[ $certInput == 2 ]]; then
-        read -p "请输入公钥文件crt的路径：" certpath
-        yellow "公钥文件crt的路径：$certpath "
-        read -p "请输入密钥文件key的路径：" keypath
-        yellow "密钥文件key的路径：$keypath "
+        read -p "请输入公钥文件 crt 的路径：" cert_path
+        yellow "公钥文件 crt 的路径：$cert_path "
+        read -p "请输入密钥文件 key 的路径：" key_path
+        yellow "密钥文件 key 的路径：$key_path "
         read -p "请输入证书的域名：" domain
         yellow "证书域名：$domain"
     else
-        certpath="/root/cert.crt"
-        keypath="/root/private.key"
+        cert_path="/root/cert.crt"
+        key_path="/root/private.key"
         if [[ -f /root/cert.crt && -f /root/private.key ]] && [[ -s /root/cert.crt && -s /root/private.key ]] && [[ -f /root/ca.log ]]; then
             domain=$(cat /root/ca.log)
             green "检测到原有域名：$domain 的证书，正在应用"
@@ -171,51 +171,50 @@ insttuic(){
         fi
     done
 
-    read -p "设置tuic Token（回车跳过为随机字符）：" token
-    [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
+    read -p "设置 tuic UUID（回车跳过为随机 UUID）：" uuid
+    [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
+
+    read -p "设置 tuic 密码（回车跳过为随机字符）：" passwd
+    [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
 
     green "正在配置 Tuic..."
     mkdir /etc/tuic >/dev/null 2>&1
     cat <<EOF > /etc/tuic/tuic.json
 {
-    "port": $port,
-    "token": ["$token"],
-    "certificate": "$certpath",
-    "private_key": "$keypath",
-    "ip": "::",
-    "congestion_controller": "bbr",
-    "alpn": ["h3"]
+    "server": "[::]:$port",
+    "users": {
+        "$uuid": "$passwd"
+    },
+    "certificate": "$cert_path",
+    "private_key": "$key_path",
+    "congestion_control": "bbr",
+    "log_level": "warn"
 }
 EOF
     mkdir /root/tuic >/dev/null 2>&1
     cat <<EOF > /root/tuic/v2rayn.json
 {
     "relay": {
-        "server": "$domain",
-        "port": $port,
-        "token": "$token",
+        "server": "$domain:$port",
+        "uuid": "$uuid",
+        "password": "$passwd",
         "ip": "$ip",
-        "congestion_controller": "bbr",
-        "udp_relay_mode": "quic",
-        "alpn": ["h3"],
-        "disable_sni": false,
-        "reduce_rtt": false,
-        "max_udp_relay_packet_size": 1500
+        "congestion_control": "bbr"
     },
     "local": {
-        "port": 6080,
-        "ip": "127.0.0.1"
+        "server": "127.0.0.1:50000"
     },
-    "log_level": "off"
+    "log_level": "warn"
 }
 EOF
 
     cat <<EOF > /root/tuic/tuic.txt
-Sagernet 与 小火箭 配置说明（以下6项必填）：
+Sagernet 与 小火箭 配置说明（以下7项必填）：
 {
     服务器地址：$domain
     服务器端口：$port
-    token：$token
+    UUID: $uuid
+    密码：$passwd
     ALPN：h3
     UDP转发：开启
     congestion controller：bbr
@@ -236,6 +235,7 @@ LimitNOFILE=infinity
 [Install]
 WantedBy=multi-user.target
 EOF
+
     systemctl daemon-reload
     systemctl enable tuic
     systemctl start tuic
@@ -245,13 +245,9 @@ EOF
         red "tuic 服务启动失败，请运行systemctl status tuic查看服务状态并反馈，脚本退出" && exit 1
     fi
     red "======================================================================================"
-    url="tuic://$domain:$port?password=$token&alpn=h3&mode=bbr#tuic-misaka"
-    echo ${url} > /root/tuic/URL.txt
     green "Tuic 代理服务安装完成"
     yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
-    yellow "Tuic 节点配置明文如下，并保存到 /root/tuic/tuic.txt"
-    cat /root/tuic/tuic.txt
 }
 
 unsttuic(){
@@ -289,7 +285,8 @@ tuicswitch(){
 }
 
 changeport(){
-    oldport=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 2p | awk '{print $2}'| tr -d ',')
+    oldport=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 2p | awk '{print $2}' | tr -d ',' | awk -F ":" '{print $4}' | tr -d '"')
+    
     read -p "设置 tuic 端口[1-65535]（回车则随机分配端口）：" port
     [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
 
@@ -307,26 +304,41 @@ changeport(){
     stoptuic && starttuic
 }
 
-changetoken(){
-    oldtoken=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
-    read -p "设置tuic Token（回车跳过为随机字符）：" token
-    [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
+changeuuid(){
+    olduuid=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 4p | awk '{print $1}' | tr -d ':"')
 
-    sed -i "3s/$oldtoken/$token/g" /etc/tuic/tuic.json
-    sed -i "5s/$oldtoken/$token/g" /root/tuic/v2rayn.json
-    sed -i "5s/$oldtoken/$token/g" /root/tuic/tuic.txt
+    read -p "设置 tuic UUID（回车跳过为随机 UUID）：" uuid
+    [[ -z $uuid ]] && uuid=$(cat /proc/sys/kernel/random/uuid)
+
+    sed -i "3s/$olduuid/$uuid/g" /etc/tuic/tuic.json
+    sed -i "5s/$olduuid/$uuid/g" /root/tuic/v2rayn.json
+    sed -i "5s/$olduuid/$uuid/g" /root/tuic/tuic.txt
+    stoptuic && starttuic
+}
+
+changepasswd(){
+    oldpasswd=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 4p | awk '{print $2}' | tr -d '"')
+
+    read -p "设置 tuic 密码（回车跳过为随机字符）：" passwd
+    [[ -z $passwd ]] && passwd=$(date +%s%N | md5sum | cut -c 1-8)
+
+    sed -i "3s/$oldpasswd/$passwd/g" /etc/tuic/tuic.json
+    sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/v2rayn.json
+    sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/tuic.txt
     stoptuic && starttuic
 }
 
 changeconf(){
     green "Tuic 配置变更选择如下:"
     echo -e " ${GREEN}1.${PLAIN} 修改端口"
-    echo -e " ${GREEN}2.${PLAIN} 修改Token"
+    echo -e " ${GREEN}2.${PLAIN} 修改 UUID"
+    echo -e " ${GREEN}3.${PLAIN} 修改密码"
     echo ""
     read -p " 请选择操作[1-2]：" confAnswer
     case $confAnswer in
         1 ) changeport ;;
-        2 ) changetoken ;;
+        2 ) changeuuid ;;
+        3 ) changepasswd ;;
         * ) exit 1 ;;
     esac
 }
@@ -334,8 +346,6 @@ changeconf(){
 showconf(){
     yellow "v2rayn客户端配置文件v2rayn.json内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
-    yellow "Tuic节点配置明文如下，并保存到 /root/tuic/tuic.txt"
-    cat /root/tuic/tuic.txt
 }
 
 menu() {
