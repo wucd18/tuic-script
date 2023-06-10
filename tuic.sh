@@ -209,15 +209,15 @@ EOF
 EOF
 
     cat <<EOF > /root/tuic/tuic.txt
-Sagernet 与 小火箭 配置说明（以下7项必填）：
+Sagernet、Nekobox 与 小火箭 配置说明（以下6项必填）：
 {
     服务器地址：$domain
     服务器端口：$port
     UUID: $uuid
     密码：$passwd
-    ALPN：h3
-    UDP转发：开启
-    congestion controller：bbr
+    UDP 转发：开启
+    UDP 转发模式：QUIC
+    拥塞控制：bbr
 }
 EOF
 
