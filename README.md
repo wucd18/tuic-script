@@ -13,7 +13,7 @@ wget -N --no-check-certificate https://gitlab.com/Misaka-blog/tuic-script/-/raw/
 ### 旧版本
 
 ```shell
-wget -N --no-check-certificate https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/tuic_old.sh && bash tuic_old.sh
+wget --no-check-certificate https://gitlab.com/Misaka-blog/tuic-script/-/raw/main/tuic_old.sh -O tuic.sh && bash tuic.sh
 ```
 
 ## 赞助
