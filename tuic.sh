@@ -297,6 +297,7 @@ unsttuic(){
     systemctl disable tuic
     rm -f /etc/systemd/system/tuic.service /root/tuic.sh
     rm -rf /usr/local/bin/tuic /etc/tuic /root/tuic
+    
     green "Tuic 已彻底卸载完成！"
 }
 
@@ -343,6 +344,8 @@ changeport(){
     sed -i "2s/$oldport/$port/g" /etc/tuic/tuic.json
     sed -i "4s/$oldport/$port/g" /root/tuic/v2rayn.json
     sed -i "4s/$oldport/$port/g" /root/tuic/tuic.txt
+    sed -i "4s/$oldport/$port/g" /root/tuic/clash-meta.yaml
+
     stoptuic && starttuic
 }
 
@@ -355,6 +358,8 @@ changeuuid(){
     sed -i "3s/$olduuid/$uuid/g" /etc/tuic/tuic.json
     sed -i "5s/$olduuid/$uuid/g" /root/tuic/v2rayn.json
     sed -i "5s/$olduuid/$uuid/g" /root/tuic/tuic.txt
+    sed -i "5s/$olduuid/$uuid/g" /root/tuic/clash-meta.yaml
+
     stoptuic && starttuic
 }
 
@@ -367,6 +372,8 @@ changepasswd(){
     sed -i "3s/$oldpasswd/$passwd/g" /etc/tuic/tuic.json
     sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/v2rayn.json
     sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/tuic.txt
+    sed -i "5s/$oldpasswd/$passwd/g" /root/tuic/clash-meta.yaml
+
     stoptuic && starttuic
 }
 
@@ -386,8 +393,11 @@ changeconf(){
 }
 
 showconf(){
-    yellow "v2rayn客户端配置文件v2rayn.json内容如下，并保存到 /root/tuic/v2rayn.json"
+    yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
+    yellow "Clash Meta 客户端配置文件已保存到 /root/tuic/clash-meta.yaml"
+    yellow "Tuic 节点配置明文如下，并保存到 /root/tuic/tuic.txt"
+    cat /root/tuic/tuic.txt
 }
 
 menu() {

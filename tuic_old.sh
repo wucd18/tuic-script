@@ -301,6 +301,7 @@ unsttuic(){
     systemctl disable tuic
     rm -f /etc/systemd/system/tuic.service /root/tuic.sh
     rm -rf /usr/local/bin/tuic /etc/tuic /root/tuic
+    
     green "Tuic 已彻底卸载完成！"
 }
 
@@ -332,6 +333,7 @@ tuicswitch(){
 
 changeport(){
     oldport=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 2p | awk '{print $2}'| tr -d ',')
+
     read -p "设置 tuic 端口[1-65535]（回车则随机分配端口）：" port
     [[ -z $port ]] && port=$(shuf -i 2000-65535 -n 1)
 
@@ -346,17 +348,22 @@ changeport(){
     sed -i "2s/$oldport/$port/g" /etc/tuic/tuic.json
     sed -i "4s/$oldport/$port/g" /root/tuic/v2rayn.json
     sed -i "4s/$oldport/$port/g" /root/tuic/tuic.txt
+    sed -i "4s/$oldport/$port/g" /root/tuic/clash-meta.yaml
+
     stoptuic && starttuic
 }
 
 changetoken(){
     oldtoken=$(cat /etc/tuic/tuic.json 2>/dev/null | sed -n 3p | awk '{print $2}' | tr -d ',[]"')
+
     read -p "设置tuic Token（回车跳过为随机字符）：" token
     [[ -z $token ]] && token=$(date +%s%N | md5sum | cut -c 1-8)
 
     sed -i "3s/$oldtoken/$token/g" /etc/tuic/tuic.json
     sed -i "5s/$oldtoken/$token/g" /root/tuic/v2rayn.json
     sed -i "5s/$oldtoken/$token/g" /root/tuic/tuic.txt
+    sed -i "5s/$oldtoken/$token/g" /root/tuic/clash-meta.yaml
+
     stoptuic && starttuic
 }
 
@@ -374,9 +381,10 @@ changeconf(){
 }
 
 showconf(){
-    yellow "v2rayn客户端配置文件v2rayn.json内容如下，并保存到 /root/tuic/v2rayn.json"
+    yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
-    yellow "Tuic节点配置明文如下，并保存到 /root/tuic/tuic.txt"
+    yellow "Clash Meta 客户端配置文件已保存到 /root/tuic/clash-meta.yaml"
+    yellow "Tuic 节点配置明文如下，并保存到 /root/tuic/tuic.txt"
     cat /root/tuic/tuic.txt
 }
 
