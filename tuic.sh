@@ -188,6 +188,7 @@ insttuic(){
     "certificate": "$cert_path",
     "private_key": "$key_path",
     "congestion_control": "bbr",
+    "alpn": ["h3"],
     "log_level": "warn"
 }
 EOF
@@ -199,7 +200,8 @@ EOF
         "uuid": "$uuid",
         "password": "$passwd",
         "ip": "$ip",
-        "congestion_control": "bbr"
+        "congestion_control": "bbr",
+        "alpn": ["h3"]
     },
     "local": {
         "server": "127.0.0.1:50000"
@@ -214,6 +216,7 @@ Sagernet、Nekobox 与 小火箭 配置说明（以下6项必填）：
     服务器端口：$port
     UUID: $uuid
     密码：$passwd
+    ALPN：h3
     UDP 转发：开启
     UDP 转发模式：QUIC
     拥塞控制：bbr
@@ -243,6 +246,7 @@ proxies:
     uuid: $uuid
     password: $passwd
     ip: $ip
+    alpn: [h3]
     disable-sni: true
     reduce-rtt: true
     request-timeout: 8000
