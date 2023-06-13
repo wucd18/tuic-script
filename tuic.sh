@@ -179,7 +179,7 @@ insttuic(){
 
     green "正在配置 Tuic..."
     mkdir /etc/tuic >/dev/null 2>&1
-    cat <<EOF > /etc/tuic/tuic.json
+    cat << EOF > /etc/tuic/tuic.json
 {
     "server": "[::]:$port",
     "users": {
@@ -192,7 +192,7 @@ insttuic(){
 }
 EOF
     mkdir /root/tuic >/dev/null 2>&1
-    cat <<EOF > /root/tuic/v2rayn.json
+    cat << EOF > /root/tuic/v2rayn.json
 {
     "relay": {
         "server": "$domain:$port",
@@ -207,8 +207,7 @@ EOF
     "log_level": "warn"
 }
 EOF
-
-    cat <<EOF > /root/tuic/tuic.txt
+    cat << EOF > /root/tuic/tuic.txt
 Sagernet、Nekobox 与 小火箭 配置说明（以下6项必填）：
 {
     服务器地址：$domain
@@ -219,6 +218,46 @@ Sagernet、Nekobox 与 小火箭 配置说明（以下6项必填）：
     UDP 转发模式：QUIC
     拥塞控制：bbr
 }
+EOF
+    cat << EOF > /root/tuic/clash-meta.yaml
+mixed-port: 7890
+external-controller: 127.0.0.1:9090
+allow-lan: false
+mode: rule
+log-level: debug
+ipv6: true
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  enhanced-mode: fake-ip
+  nameserver:
+    - 8.8.8.8
+    - 1.1.1.1
+    - 114.114.114.114
+
+proxies:
+  - name: Misaka-tuic
+    server: $domain
+    port: $port
+    type: tuic
+    uuid: $uuid
+    password: $passwd
+    ip: $ip
+    disable-sni: true
+    reduce-rtt: true
+    request-timeout: 8000
+    udp-relay-mode: quic
+    congestion-controller: bbr
+
+proxy-groups:
+  - name: Proxy
+    type: select
+    proxies:
+      - Misaka-tuic
+      
+rules:
+  - GEOIP,CN,DIRECT
+  - MATCH,Proxy
 EOF
 
     cat << EOF >/etc/systemd/system/tuic.service
@@ -248,6 +287,7 @@ EOF
     green "Tuic 代理服务安装完成"
     yellow "v2rayn 客户端配置文件 v2rayn.json 内容如下，并保存到 /root/tuic/v2rayn.json"
     cat /root/tuic/v2rayn.json
+    yellow "Clash Meta 客户端配置文件已保存到 /root/tuic/clash-meta.yaml"
     yellow "Tuic 节点配置明文如下，并保存到 /root/tuic/tuic.txt"
     cat /root/tuic/tuic.txt
 }
