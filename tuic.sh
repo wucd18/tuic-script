@@ -204,7 +204,7 @@ EOF
         "alpn": ["h3"]
     },
     "local": {
-        "server": "127.0.0.1:50000"
+        "server": "127.0.0.1:6080"
     },
     "log_level": "warn"
 }
